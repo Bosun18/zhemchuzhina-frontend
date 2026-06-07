@@ -47,13 +47,14 @@ export interface Booking {
 }
 
 // Отзыв — ReviewController.index()
-// возвращает: id, rating, text, user (строка — имя пользователя), created_at
+// возвращает: id, rating, text, user (строка — имя пользователя), created_at, admin_comment
 export interface Review {
   id: number;
   rating: number;
   text: string;
   user: string;
   created_at: string;
+  admin_comment?: string;
 }
 
 // Новость — NewsController

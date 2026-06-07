@@ -91,6 +91,11 @@ export default function ReviewsPage() {
                 <StarRating rating={review.rating} />
               </div>
               <p className="text-gray-600 leading-relaxed">{review.text}</p>
+              {review.admin_comment?.trim() && (
+                <p className="text-sm text-blue-700 bg-blue-50 rounded-lg px-3 py-2 mt-3">
+                  <span className="font-medium">Ответ администратора:</span> {review.admin_comment}
+                </p>
+              )}
             </div>
           ))}
         </div>

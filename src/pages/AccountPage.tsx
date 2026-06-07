@@ -123,7 +123,7 @@ function BookingsTab() {
                 <span className="font-medium">Ваш комментарий:</span> {booking.comment}
               </p>
             )}
-            {booking.admin_comment && (
+            {booking.admin_comment?.trim() && (
               <p className="text-sm text-blue-700 bg-blue-50 rounded-lg px-3 py-2 mb-3">
                 <span className="font-medium">Ответ администратора:</span> {booking.admin_comment}
               </p>
