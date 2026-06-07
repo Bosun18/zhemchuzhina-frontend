@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
+import CookieBanner from './components/CookieBanner';
 
 import HomePage from './pages/HomePage';
 import RoomsPage from './pages/RoomsPage';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
           </Route>
         </Routes>
+        <CookieBanner />
       </AuthProvider>
     </BrowserRouter>
   );
