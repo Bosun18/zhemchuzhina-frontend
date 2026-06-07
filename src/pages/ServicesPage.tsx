@@ -47,7 +47,7 @@ export default function ServicesPage() {
                 )}
                 {service.price && (
                   <p className="text-blue-700 font-semibold">
-                    {service.price.toLocaleString('ru-RU')} ₽
+                    {Number(service.price).toLocaleString('ru-RU')} ₽
                   </p>
                 )}
               </div>

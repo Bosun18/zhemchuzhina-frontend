@@ -46,7 +46,7 @@ export default function GalleryPage() {
             >
               <img
                 src={item.image}
-                alt={item.title || 'Фото'}
+                alt={item.caption || 'Фото'}
                 className="w-full object-cover hover:scale-105 transition duration-300"
               />
             </div>
@@ -67,9 +67,9 @@ export default function GalleryPage() {
             >
               ✕
             </button>
-            <img src={selected.image} alt={selected.title || ''} className="max-h-[85vh] rounded-xl object-contain" />
-            {selected.title && (
-              <p className="text-white text-center mt-3 text-sm">{selected.title}</p>
+            <img src={selected.image} alt={selected.caption || ''} className="max-h-[85vh] rounded-xl object-contain" />
+            {selected.caption && (
+              <p className="text-white text-center mt-3 text-sm">{selected.caption}</p>
             )}
           </div>
         </div>

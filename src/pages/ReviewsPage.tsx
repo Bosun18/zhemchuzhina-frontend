@@ -85,7 +85,7 @@ export default function ReviewsPage() {
             <div key={review.id} className="bg-white rounded-2xl shadow p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="font-semibold text-gray-800">{review.user.name}</p>
+                  <p className="font-semibold text-gray-800">{review.user}</p>
                   <p className="text-gray-400 text-xs mt-0.5">{formatDate(review.created_at)}</p>
                 </div>
                 <StarRating rating={review.rating} />
