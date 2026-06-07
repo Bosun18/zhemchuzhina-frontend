@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const hasAdminAccess = !!user && user.roles.some(role => role !== 'guest');
 
   const handleLogout = async () => {
     await logout();
@@ -33,6 +34,11 @@ export default function MainLayout() {
                 <Link to="/account" className="hover:text-blue-200 transition">
                   👤 {user?.name}
                 </Link>
+                {hasAdminAccess && (
+                  <Link to="/admin" className="hover:text-blue-200 transition">
+                    Админ-панель
+                  </Link>
+                )}
                 <button onClick={handleLogout} className="hover:text-blue-200 transition">
                   Выйти
                 </button>
