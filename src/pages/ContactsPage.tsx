@@ -1,4 +1,17 @@
+import { useState } from 'react';
+
+const COORDS = { lat: '43.174874', lon: '40.388759' };
+
 export default function ContactsPage() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyCoords = () => {
+    navigator.clipboard.writeText(`${COORDS.lat}, ${COORDS.lon}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="text-center mb-12">
@@ -67,6 +80,27 @@ export default function ContactsPage() {
                 <span className="shrink-0">🚐</span>
                 <p><span className="font-medium">Трансфер</span> — можем организовать встречу. Уточняйте при бронировании.</p>
               </div>
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="shrink-0">📍</span>
+                <span className="font-mono text-gray-700">{COORDS.lat}, {COORDS.lon}</span>
+                <button
+                  onClick={handleCopyCoords}
+                  className="text-blue-700 hover:text-blue-900 transition text-xs font-medium underline underline-offset-2"
+                >
+                  {copied ? 'Скопировано!' : 'Скопировать координаты'}
+                </button>
+              </div>
+              <a
+                href={`https://yandex.ru/maps/?rtext=~${COORDS.lat}%2C${COORDS.lon}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+              >
+                🧭 Маршрут в Яндекс Навигаторе
+              </a>
             </div>
           </div>
         </div>
