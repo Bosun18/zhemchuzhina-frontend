@@ -1,7 +1,12 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 import { ADMIN_URL } from '../api/client';
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `px-3 py-1.5 rounded-lg transition ${
+    isActive ? 'bg-black/25 text-white font-semibold' : 'text-blue-100 hover:text-white hover:bg-white/10'
+  }`;
 
 export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -24,14 +29,14 @@ export default function MainLayout() {
           </Link>
           <div className="flex items-center gap-12 whitespace-nowrap shrink-0">
             <nav className="hidden 2xl:flex gap-6 text-sm font-medium">
-              <Link to="/" className="hover:text-blue-200 transition">Главная</Link>
-              <Link to="/rooms" className="hover:text-blue-200 transition">Номера</Link>
-              <Link to="/booking" className="hover:text-blue-200 transition">Бронирование</Link>
-              <Link to="/services" className="hover:text-blue-200 transition">Услуги</Link>
-              <Link to="/news" className="hover:text-blue-200 transition">Новости</Link>
-              <Link to="/gallery" className="hover:text-blue-200 transition">Галерея</Link>
-              <Link to="/reviews" className="hover:text-blue-200 transition">Отзывы</Link>
-              <Link to="/contacts" className="hover:text-blue-200 transition">Контакты</Link>
+              <NavLink to="/" end className={navLinkClass}>Главная</NavLink>
+              <NavLink to="/rooms" className={navLinkClass}>Номера</NavLink>
+              <NavLink to="/booking" className={navLinkClass}>Бронирование</NavLink>
+              <NavLink to="/services" className={navLinkClass}>Услуги</NavLink>
+              <NavLink to="/news" className={navLinkClass}>Новости</NavLink>
+              <NavLink to="/gallery" className={navLinkClass}>Галерея</NavLink>
+              <NavLink to="/reviews" className={navLinkClass}>Отзывы</NavLink>
+              <NavLink to="/contacts" className={navLinkClass}>Контакты</NavLink>
             </nav>
             <div className="flex items-center gap-3 text-sm">
               {isAuthenticated ? (
