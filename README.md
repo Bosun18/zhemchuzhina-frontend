@@ -92,4 +92,4 @@ npm run build
 ## Связанные репозитории
 
 - **Бэкенд**: [Bosun18/zhemchuzhina-backend](https://github.com/Bosun18/zhemchuzhina-backend)  
-  Laravel 12 + Filament 4 + MySQL
+  Laravel 13 + Filament 5 + MySQL
