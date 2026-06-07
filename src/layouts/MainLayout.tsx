@@ -22,7 +22,7 @@ export default function MainLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-blue-900 text-white shadow-md">
+      <header className="sticky top-0 z-50 bg-blue-900 text-white shadow-md">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-x-6">
           <Link to="/" className="text-xl font-bold tracking-wide whitespace-nowrap shrink-0">
             🌊 Жемчужина
