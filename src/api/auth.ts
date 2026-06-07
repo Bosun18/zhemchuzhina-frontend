@@ -15,5 +15,5 @@ export const authApi = {
     apiClient.get<User>('/profile'),
 
   updateProfile: (data: Partial<User & { password?: string; password_confirmation?: string }>) =>
-    apiClient.put<User>('/profile', data),
+    apiClient.patch<User>('/profile', data),
 };
