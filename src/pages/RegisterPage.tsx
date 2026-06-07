@@ -6,19 +6,23 @@ import { useAuth } from '../context/AuthContext';
 
 interface FieldProps {
   label: string;
+  name: string;
   type?: string;
+  autoComplete?: string;
   required?: boolean;
   value: string;
   error?: string;
   onChange: (value: string) => void;
 }
 
-function Field({ label, type = 'text', required = false, value, error, onChange }: FieldProps) {
+function Field({ label, name, type = 'text', autoComplete, required = false, value, error, onChange }: FieldProps) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}{required && ' *'}</label>
       <input
+        name={name}
         type={type}
+        autoComplete={autoComplete}
         required={required}
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -82,12 +86,12 @@ export default function RegisterPage() {
         <h1 className="text-2xl font-bold text-center text-blue-900 mb-6">Регистрация</h1>
         {errors.general && <div className="bg-red-50 text-red-700 border border-red-200 rounded p-3 mb-4 text-sm">{errors.general}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Field label="Имя и фамилия" required value={form.name} error={errors.name} onChange={v => set('name', v)} />
-          <Field label="Email" type="email" required value={form.email} error={errors.email} onChange={v => set('email', v)} />
-          <Field label="Телефон (WhatsApp)" value={form.phone} error={errors.phone} onChange={v => set('phone', v)} />
-          <Field label="Город проживания" required value={form.city} error={errors.city} onChange={v => set('city', v)} />
-          <Field label="Пароль" type="password" required value={form.password} error={errors.password} onChange={v => set('password', v)} />
-          <Field label="Повторите пароль" type="password" required value={form.password_confirmation} error={errors.password_confirmation} onChange={v => set('password_confirmation', v)} />
+          <Field label="Имя и фамилия" name="name" autoComplete="name" required value={form.name} error={errors.name} onChange={v => set('name', v)} />
+          <Field label="Email" name="email" type="email" autoComplete="email" required value={form.email} error={errors.email} onChange={v => set('email', v)} />
+          <Field label="Телефон (WhatsApp)" name="phone" type="tel" autoComplete="tel" value={form.phone} error={errors.phone} onChange={v => set('phone', v)} />
+          <Field label="Город проживания" name="city" autoComplete="address-level2" required value={form.city} error={errors.city} onChange={v => set('city', v)} />
+          <Field label="Пароль" name="password" type="password" autoComplete="new-password" required value={form.password} error={errors.password} onChange={v => set('password', v)} />
+          <Field label="Повторите пароль" name="password_confirmation" type="password" autoComplete="new-password" required value={form.password_confirmation} error={errors.password_confirmation} onChange={v => set('password_confirmation', v)} />
           <div className="flex items-start gap-2">
             <input
               id="agree"
@@ -106,7 +110,7 @@ export default function RegisterPage() {
           {errors.agree && <p className="text-red-600 text-xs">{errors.agree}</p>}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !form.agree}
             className="w-full bg-blue-800 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
           >
             {loading ? 'Регистрируем...' : 'Зарегистрироваться'}
