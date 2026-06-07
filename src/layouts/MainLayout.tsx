@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-  const hasAdminAccess = !!user && user.roles.some(role => role !== 'guest');
+  const hasAdminAccess = !!user && user.role !== 'guest';
 
   const handleLogout = async () => {
     await logout();
