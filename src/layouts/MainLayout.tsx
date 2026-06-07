@@ -1,11 +1,14 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useIdleLogout } from '../hooks/useIdleLogout';
 import { ADMIN_URL } from '../api/client';
 
 export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const hasAdminAccess = !!user && user.role !== 'guest';
+
+  useIdleLogout();
 
   const handleLogout = async () => {
     await logout();
