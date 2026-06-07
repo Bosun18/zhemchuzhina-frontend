@@ -17,13 +17,9 @@ export interface RoomType {
 
 export interface Room {
   id: number;
-  room_type_id: number;
-  number: string;
+  number: number;
   floor: number;
-  description?: string;
-  is_active: boolean;
-  room_type: RoomType;
-  current_price?: number;
+  type: RoomType;
 }
 
 export interface Booking {
