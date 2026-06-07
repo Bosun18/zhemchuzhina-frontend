@@ -2,6 +2,10 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+// Админ-панель живёт на том же бэкенде, что и API — берём её адрес из общего origin,
+// чтобы при смене окружения (dev/prod) не нужно было держать в синхроне два URL.
+export const ADMIN_URL = `${new URL(API_URL).origin}/admin`;
+
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: {

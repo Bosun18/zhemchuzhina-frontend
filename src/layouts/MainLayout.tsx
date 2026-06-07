@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ADMIN_URL } from '../api/client';
 
 export default function MainLayout() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -35,9 +36,9 @@ export default function MainLayout() {
                   👤 {user?.name}
                 </Link>
                 {hasAdminAccess && (
-                  <Link to="/admin" className="hover:text-blue-200 transition">
+                  <a href={ADMIN_URL} className="hover:text-blue-200 transition">
                     Админ-панель
-                  </Link>
+                  </a>
                 )}
                 <button onClick={handleLogout} className="hover:text-blue-200 transition">
                   Выйти
