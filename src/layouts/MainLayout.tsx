@@ -2,6 +2,7 @@ import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 import { ADMIN_URL } from '../api/client';
+import WhatsAppButton from '../components/WhatsAppButton';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-1.5 rounded-lg transition ${
@@ -86,6 +87,8 @@ export default function MainLayout() {
           </div>
         </div>
       </footer>
+
+      <WhatsAppButton />
     </div>
   );
 }
