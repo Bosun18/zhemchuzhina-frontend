@@ -14,6 +14,7 @@ export interface RoomType {
   name: string;
   description?: string;
   max_guests: number;
+  photos?: string[];
 }
 
 // Номер — RoomController.formatRoom()
@@ -23,6 +24,18 @@ export interface Room {
   number: number;
   floor: number;
   type: RoomType;
+}
+
+// Календарь занятости — RoomController.calendar()
+// возвращает активные номера, у каждого массив броней на запрошенный период.
+export interface CalendarBooking {
+  check_in: string;
+  check_out: string;
+  status: 'pending' | 'confirmed';
+}
+
+export interface CalendarRoom extends Room {
+  bookings: CalendarBooking[];
 }
 
 // Упрощённый номер внутри бронирования — BookingController.formatBooking()
