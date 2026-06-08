@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { notificationsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -20,7 +21,9 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   // Опрашиваем количество непрочитанных уведомлений для бейджа
   useEffect(() => {
@@ -35,27 +38,37 @@ export default function NotificationBell() {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  // Закрываем меню по клику снаружи
+  // Закрываем меню по клику снаружи (меню в портале, поэтому проверяем оба ref)
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (rootRef.current && !rootRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      const target = e.target as Node;
+      if (buttonRef.current?.contains(target)) return;
+      if (panelRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
+  // Позиционируем меню под колокольчиком (портал — фиксированное позиционирование)
+  const updatePosition = () => {
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+    }
+  };
+
   const toggleOpen = () => {
     const next = !open;
-    setOpen(next);
     if (next) {
+      updatePosition();
       setLoading(true);
       notificationsApi.list()
         .then(({ data }) => setNotifications(data))
         .finally(() => setLoading(false));
     }
+    setOpen(next);
   };
 
   const handleNotificationClick = async (notification: Notification) => {
@@ -72,7 +85,13 @@ export default function NotificationBell() {
     }
     setOpen(false);
     if (notification.url) {
-      navigate(notification.url);
+      // Абсолютные ссылки (например, на админ-панель бэкенда) — это другой
+      // origin, поэтому уходим полной навигацией, а не через react-router.
+      if (/^https?:\/\//i.test(notification.url)) {
+        window.location.href = notification.url;
+      } else {
+        navigate(notification.url);
+      }
     }
   };
 
@@ -91,8 +110,9 @@ export default function NotificationBell() {
   const hasUnread = notifications.some(n => !n.read_at);
 
   return (
-    <div className="relative" ref={rootRef}>
+    <div className="relative">
       <button
+        ref={buttonRef}
         onClick={toggleOpen}
         aria-label="Уведомления"
         className="relative p-2 rounded-lg hover:bg-white/10 transition"
@@ -107,8 +127,12 @@ export default function NotificationBell() {
         )}
       </button>
 
-      {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[90vw] bg-white text-gray-800 rounded-xl shadow-xl overflow-hidden">
+      {open && createPortal(
+        <div
+          ref={panelRef}
+          style={{ position: 'fixed', top: pos.top, right: pos.right, whiteSpace: 'normal' }}
+          className="z-[70] w-80 max-w-[90vw] bg-white text-gray-800 rounded-xl shadow-xl overflow-hidden"
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <p className="font-semibold">Уведомления</p>
             {hasUnread && (
@@ -129,7 +153,7 @@ export default function NotificationBell() {
               <button
                 key={notification.id}
                 onClick={() => handleNotificationClick(notification)}
-                className={`w-full text-left px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition ${
+                className={`block w-full text-left px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition ${
                   !notification.read_at ? 'bg-blue-50/60' : ''
                 }`}
               >
@@ -140,7 +164,7 @@ export default function NotificationBell() {
                       <p className="font-medium text-sm text-gray-800 truncate">{notification.title}</p>
                     )}
                     {notification.body && (
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{notification.body}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2 break-words">{notification.body}</p>
                     )}
                     <p className="text-xs text-gray-400 mt-1">{formatTime(notification.created_at)}</p>
                   </div>
@@ -148,7 +172,8 @@ export default function NotificationBell() {
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
