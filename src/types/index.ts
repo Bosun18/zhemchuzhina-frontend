@@ -83,6 +83,19 @@ export interface GalleryItem {
   sort_order: number;
 }
 
+// Уведомление — NotificationController.formatNotification()
+// возвращает: id, title, body, icon, color, url, read_at, created_at
+export interface Notification {
+  id: string;
+  title: string | null;
+  body: string | null;
+  icon?: string | null;
+  color?: string | null;
+  url?: string | null;
+  read_at: string | null;
+  created_at: string;
+}
+
 export interface AuthResponse {
   token: string;
   user: User;

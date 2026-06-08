@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ReactNode } from 'react';
+import { apiClient } from '../api/client';
 
 interface Props {
   children: ReactNode;
@@ -19,6 +20,14 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: { componentStack: string }) {
     console.error('[ErrorBoundary]', error, info.componentStack);
+    if (import.meta.env.PROD) {
+      apiClient.post('/log-error', {
+        type: 'error',
+        message: error.message.slice(0, 1000),
+        stack: ((error.stack ?? '') + info.componentStack).slice(0, 5000),
+        url: window.location.href,
+      }).catch(() => {});
+    }
   }
 
   handleReload = () => {

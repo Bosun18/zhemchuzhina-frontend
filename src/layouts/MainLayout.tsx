@@ -3,9 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 import { ADMIN_URL } from '../api/client';
 import WhatsAppButton from '../components/WhatsAppButton';
+import NotificationBell from '../components/NotificationBell';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-1.5 rounded-lg transition ${
+  `px-2.5 py-1.5 rounded-lg transition ${
     isActive ? 'bg-black/25 text-white font-semibold' : 'text-blue-100 hover:text-white hover:bg-white/10'
   }`;
 
@@ -28,8 +29,8 @@ export default function MainLayout() {
           <Link to="/" className="text-xl font-bold tracking-wide whitespace-nowrap shrink-0">
             🌊 Жемчужина
           </Link>
-          <div className="flex items-center gap-12 whitespace-nowrap shrink-0">
-            <nav className="hidden 2xl:flex gap-6 text-sm font-medium">
+          <div className="flex items-center gap-6 whitespace-nowrap shrink-0">
+            <nav className="hidden 2xl:flex gap-3 text-sm font-medium">
               <NavLink to="/" end className={navLinkClass}>Главная</NavLink>
               <NavLink to="/rooms" className={navLinkClass}>Номера</NavLink>
               <NavLink to="/booking" className={navLinkClass}>Бронирование</NavLink>
@@ -39,9 +40,10 @@ export default function MainLayout() {
               <NavLink to="/reviews" className={navLinkClass}>Отзывы</NavLink>
               <NavLink to="/contacts" className={navLinkClass}>Контакты</NavLink>
             </nav>
-            <div className="flex items-center gap-3 text-sm">
+            <div className="flex items-center gap-2 text-sm">
               {isAuthenticated ? (
                 <>
+                  <NotificationBell />
                   <Link to="/account" className="hover:text-blue-200 transition">
                     👤 {user?.name}
                   </Link>
