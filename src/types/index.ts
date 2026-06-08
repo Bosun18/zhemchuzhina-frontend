@@ -72,7 +72,7 @@ export interface Service {
   title: string;
   description?: string;
   price?: string;
-  is_active: boolean;
+  image?: string;
 }
 
 // Галерея — GalleryController возвращает поле caption, не title

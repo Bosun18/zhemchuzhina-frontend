@@ -8,6 +8,8 @@ export const roomsApi = {
   show: (id: number) =>
     apiClient.get<Room>(`/rooms/${id}`),
 
-  availability: (id: number, params: { check_in: string; check_out: string }) =>
-    apiClient.get<{ available: boolean; booked_dates: string[] }>(`/rooms/${id}/availability`, { params }),
+  // GET /rooms/availability?check_in&check_out — список активных номеров,
+  // каждый с дополнительным полем is_available на выбранные даты.
+  availability: (params: { check_in: string; check_out: string }) =>
+    apiClient.get<(Room & { is_available: boolean })[]>('/rooms/availability', { params }),
 };

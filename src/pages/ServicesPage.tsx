@@ -1,18 +1,14 @@
-import { useEffect, useState } from 'react';
 import { apiClient } from '../api';
+import { useFetch } from '../hooks/useFetch';
+import Spinner from '../components/Spinner';
 import type { Service } from '../types';
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    apiClient.get<Service[]>('/services')
-      .then(({ data }) => setServices(data))
-      .catch(() => setError('Не удалось загрузить услуги.'))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading, error } = useFetch<Service[]>(
+    () => apiClient.get('/services'),
+    'Не удалось загрузить услуги.',
+  );
+  const services = data ?? [];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
@@ -21,11 +17,7 @@ export default function ServicesPage() {
         <p className="text-gray-500 text-lg">Всё для комфортного отдыха</p>
       </div>
 
-      {loading && (
-        <div className="flex justify-center py-24">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">{error}</div>

@@ -18,6 +18,7 @@ import RegisterPage from './pages/RegisterPage';
 import AccountPage from './pages/AccountPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/account" element={<AccountPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/terms" element={<TermsPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Route>
           </Routes>
           <CookieBanner />

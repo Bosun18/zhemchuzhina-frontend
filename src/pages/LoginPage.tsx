@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../utils/errors';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -18,8 +19,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
       navigate('/account');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка входа');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Ошибка входа'));
     } finally {
       setLoading(false);
     }

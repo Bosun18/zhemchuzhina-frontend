@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { notificationsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
+import Spinner from './Spinner';
 import type { Notification } from '../types';
 
 const POLL_INTERVAL_MS = 30_000;
@@ -118,11 +119,7 @@ export default function NotificationBell() {
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {loading && (
-              <div className="flex justify-center py-8">
-                <div className="w-6 h-6 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-              </div>
-            )}
+            {loading && <Spinner size="sm" className="py-8" />}
 
             {!loading && notifications.length === 0 && (
               <p className="text-center text-gray-400 text-sm py-8">Уведомлений пока нет</p>

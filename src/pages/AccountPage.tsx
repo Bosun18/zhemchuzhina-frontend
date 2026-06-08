@@ -3,6 +3,10 @@ import type { FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { apiClient, authApi, bookingsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { getErrorMessage, parseValidationErrors } from '../utils/errors';
+import { formatDate } from '../utils/format';
+import Field from '../components/Field';
+import Spinner from '../components/Spinner';
 import type { Booking } from '../types';
 
 // ─── Вспомогательные компоненты ──────────────────────────────────────────────
@@ -21,44 +25,9 @@ function StatusBadge({ status }: { status: Booking['status'] }) {
   );
 }
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('ru-RU', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
-}
-
 function nightsCount(checkIn: string, checkOut: string) {
   const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
   return Math.round(diff / 86400000);
-}
-
-interface FieldProps {
-  label: string;
-  name: string;
-  type?: string;
-  placeholder?: string;
-  value: string;
-  error?: string;
-  onChange: (value: string) => void;
-}
-
-function Field({ label, name, type = 'text', placeholder = '', value, error, onChange }: FieldProps) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        name={name}
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-          error ? 'border-red-400' : 'border-gray-300'
-        }`}
-      />
-      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
-    </div>
-  );
 }
 
 // ─── Вкладка: Бронирования ────────────────────────────────────────────────────
@@ -86,11 +55,7 @@ function BookingsTab() {
     }
   };
 
-  if (loading) return (
-    <div className="flex justify-center py-16">
-      <div className="w-8 h-8 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-    </div>
-  );
+  if (loading) return <Spinner size="md" className="py-16" />;
 
   if (bookings.length === 0) return (
     <div className="text-center py-16 text-gray-400">
@@ -179,8 +144,8 @@ function ReviewModal({ booking, onClose }: { booking: Booking; onClose: () => vo
     try {
       await apiClient.post('/reviews', { booking_id: booking.id, rating, text });
       setDone(true);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Ошибка при отправке отзыва');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Ошибка при отправке отзыва'));
     } finally {
       setLoading(false);
     }
@@ -296,14 +261,8 @@ function ProfileTab() {
       updateUser(data);
       setSuccess(true);
       setForm(f => ({ ...f, password: '', password_confirmation: '' }));
-    } catch (err: any) {
-      if (err.response?.data?.errors) {
-        const mapped: Record<string, string> = {};
-        for (const [key, val] of Object.entries(err.response.data.errors)) {
-          mapped[key] = (val as string[])[0];
-        }
-        setErrors(mapped);
-      }
+    } catch (err) {
+      setErrors(parseValidationErrors(err));
     } finally {
       setLoading(false);
     }

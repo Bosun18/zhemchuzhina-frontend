@@ -23,11 +23,23 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// При 401 — очищаем авторизацию
+// Эндпоинты авторизации: их 401/422 должны обрабатывать сами страницы
+// (показать «неверный пароль» и т.п.), а не выкидывать на /login.
+const AUTH_PATHS = ['/login', '/register', '/logout', '/log-error'];
+
+// При 401 очищаем авторизацию и уводим на /login — но только если истекла
+// живая сессия: был токен, это не auth-запрос и мы ещё не на /login.
+// Иначе ошибка входа «проглатывалась» бы редиректом, а фоновый запрос с
+// протухшим токеном мог бы выкинуть пользователя со страницы в любой момент.
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const url: string = error.config?.url ?? '';
+    const isAuthPath = AUTH_PATHS.some((path) => url.includes(path));
+    const hadToken = !!localStorage.getItem('token');
+
+    if (status === 401 && hadToken && !isAuthPath && window.location.pathname !== '/login') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';

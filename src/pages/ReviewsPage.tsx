@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useFetch } from '../hooks/useFetch';
+import { formatDate } from '../utils/format';
+import Spinner from '../components/Spinner';
 import type { Review } from '../types';
 
 function StarRating({ rating }: { rating: number }) {
@@ -20,19 +22,11 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function ReviewsPage() {
   const { isAuthenticated } = useAuth();
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    apiClient.get<Review[]>('/reviews')
-      .then(({ data }) => setReviews(data))
-      .catch(() => setError('Не удалось загрузить отзывы.'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  const { data, loading, error } = useFetch<Review[]>(
+    () => apiClient.get('/reviews'),
+    'Не удалось загрузить отзывы.',
+  );
+  const reviews = data ?? [];
 
   const avgRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -65,11 +59,7 @@ export default function ReviewsPage() {
         </div>
       )}
 
-      {loading && (
-        <div className="flex justify-center py-24">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">{error}</div>

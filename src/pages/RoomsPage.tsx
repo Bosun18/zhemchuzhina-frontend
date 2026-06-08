@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { roomsApi } from '../api';
+import { useFetch } from '../hooks/useFetch';
+import Spinner from '../components/Spinner';
 import type { Room } from '../types';
 
 const AMENITIES = ['Кондиционер', 'TV', 'Холодильник', 'Wi-Fi', 'Душ'];
@@ -59,16 +60,11 @@ function RoomCard({ room }: { room: Room }) {
 }
 
 export default function RoomsPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    roomsApi.list()
-      .then(({ data }) => setRooms(data))
-      .catch(() => setError('Не удалось загрузить номера. Попробуйте обновить страницу.'))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data, loading, error } = useFetch<Room[]>(
+    () => roomsApi.list(),
+    'Не удалось загрузить номера. Попробуйте обновить страницу.',
+  );
+  const rooms = data ?? [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -80,11 +76,7 @@ export default function RoomsPage() {
         </p>
       </div>
 
-      {loading && (
-        <div className="flex justify-center py-24">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">

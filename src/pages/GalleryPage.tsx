@@ -1,19 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { apiClient } from '../api';
+import { useFetch } from '../hooks/useFetch';
+import Spinner from '../components/Spinner';
 import type { GalleryItem } from '../types';
 
 export default function GalleryPage() {
-  const [items, setItems] = useState<GalleryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data, loading, error } = useFetch<GalleryItem[]>(
+    () => apiClient.get('/gallery'),
+    'Не удалось загрузить галерею.',
+  );
+  const items = data ?? [];
   const [selected, setSelected] = useState<GalleryItem | null>(null);
-
-  useEffect(() => {
-    apiClient.get<GalleryItem[]>('/gallery')
-      .then(({ data }) => setItems(data))
-      .catch(() => setError('Не удалось загрузить галерею.'))
-      .finally(() => setLoading(false));
-  }, []);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
@@ -22,11 +19,7 @@ export default function GalleryPage() {
         <p className="text-gray-500">Фотографии гостевого дома, номеров и окрестностей</p>
       </div>
 
-      {loading && (
-        <div className="flex justify-center py-24">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">{error}</div>

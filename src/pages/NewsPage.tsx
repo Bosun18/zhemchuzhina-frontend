@@ -1,22 +1,16 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { apiClient } from '../api';
+import { useFetch } from '../hooks/useFetch';
+import { formatDate } from '../utils/format';
+import Spinner from '../components/Spinner';
 import type { NewsItem } from '../types';
 
 export default function NewsPage() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    apiClient.get<NewsItem[]>('/news')
-      .then(({ data }) => setNews(data))
-      .catch(() => setError('Не удалось загрузить новости.'))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+  const { data, loading, error } = useFetch<NewsItem[]>(
+    () => apiClient.get('/news'),
+    'Не удалось загрузить новости.',
+  );
+  const news = data ?? [];
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -24,11 +18,7 @@ export default function NewsPage() {
         <h1 className="text-4xl font-bold text-blue-900 mb-3">Новости и акции</h1>
       </div>
 
-      {loading && (
-        <div className="flex justify-center py-24">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-700 rounded-full animate-spin" />
-        </div>
-      )}
+      {loading && <Spinner />}
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">{error}</div>

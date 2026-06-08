@@ -3,35 +3,8 @@ import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 import { useAuth } from '../context/AuthContext';
-
-interface FieldProps {
-  label: string;
-  name: string;
-  type?: string;
-  autoComplete?: string;
-  required?: boolean;
-  value: string;
-  error?: string;
-  onChange: (value: string) => void;
-}
-
-function Field({ label, name, type = 'text', autoComplete, required = false, value, error, onChange }: FieldProps) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}{required && ' *'}</label>
-      <input
-        name={name}
-        type={type}
-        autoComplete={autoComplete}
-        required={required}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${error ? 'border-red-400' : 'border-gray-300'}`}
-      />
-      {error && <p className="text-red-600 text-xs mt-1">{error}</p>}
-    </div>
-  );
-}
+import { getErrorMessage, parseValidationErrors } from '../utils/errors';
+import Field from '../components/Field';
 
 export default function RegisterPage() {
   const { login } = useAuth();
@@ -65,15 +38,12 @@ export default function RegisterPage() {
       });
       await login(form.email, form.password);
       navigate('/account');
-    } catch (err: any) {
-      if (err.response?.data?.errors) {
-        const mapped: Record<string, string> = {};
-        for (const [key, val] of Object.entries(err.response.data.errors)) {
-          mapped[key] = (val as string[])[0];
-        }
-        setErrors(mapped);
+    } catch (err) {
+      const validation = parseValidationErrors(err);
+      if (Object.keys(validation).length > 0) {
+        setErrors(validation);
       } else {
-        setErrors({ general: err.response?.data?.message || 'Ошибка регистрации' });
+        setErrors({ general: getErrorMessage(err, 'Ошибка регистрации') });
       }
     } finally {
       setLoading(false);
