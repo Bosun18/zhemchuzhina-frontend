@@ -2,39 +2,33 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { bookingsApi } from '../api';
 import { getErrorMessage } from '../utils/errors';
+import { addDays, todayStr } from '../utils/dates';
 import type { CalendarRoom } from '../types';
 
 interface BookingFormProps {
   rooms: CalendarRoom[];
   selectedRoomId: number | null;
   onRoomChange: (id: number | null) => void;
+  // Даты живут в BookingPage — выбор в календаре и форма синхронизированы.
+  checkInDate: string;
+  checkOutDate: string;
+  onCheckInChange: (date: string) => void;
+  onCheckOutChange: (date: string) => void;
   isAuthenticated: boolean;
   onSuccess: () => void;
 }
-
-// Прибавляет n дней к дате формата YYYY-MM-DD (без сдвигов из-за таймзоны).
-function addDays(dateStr: string, n: number): string {
-  const [y, m, d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m - 1, d + n);
-  const pad = (v: number) => String(v).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
-
-const today = (() => {
-  const now = new Date();
-  const pad = (v: number) => String(v).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-})();
 
 export default function BookingForm({
   rooms,
   selectedRoomId,
   onRoomChange,
+  checkInDate,
+  checkOutDate,
+  onCheckInChange,
+  onCheckOutChange,
   isAuthenticated,
   onSuccess,
 }: BookingFormProps) {
-  const [checkInDate, setCheckInDate] = useState(today);
-  const [checkOutDate, setCheckOutDate] = useState(addDays(today, 1));
   const [guestsCount, setGuestsCount] = useState(1);
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -48,9 +42,9 @@ export default function BookingForm({
   const minCheckOut = addDays(checkInDate, 1);
 
   const handleCheckIn = (value: string) => {
-    setCheckInDate(value);
+    onCheckInChange(value);
     // Не даём дате выезда оказаться раньше или равной заезду.
-    if (checkOutDate <= value) setCheckOutDate(addDays(value, 1));
+    if (checkOutDate <= value) onCheckOutChange(addDays(value, 1));
   };
 
   const handleRoomChange = (value: string) => {
@@ -124,7 +118,7 @@ export default function BookingForm({
           <input
             type="date"
             value={checkInDate}
-            min={today}
+            min={todayStr}
             onChange={(e) => handleCheckIn(e.target.value)}
             className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -135,7 +129,7 @@ export default function BookingForm({
             type="date"
             value={checkOutDate}
             min={minCheckOut}
-            onChange={(e) => setCheckOutDate(e.target.value)}
+            onChange={(e) => onCheckOutChange(e.target.value)}
             className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
