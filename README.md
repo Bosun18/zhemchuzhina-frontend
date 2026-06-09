@@ -1,5 +1,7 @@
 # Жемчужина — Фронтенд
 
+[![CI](https://github.com/Bosun18/zhemchuzhina-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/Bosun18/zhemchuzhina-frontend/actions/workflows/ci.yml)
+
 Сайт гостевого дома «Жемчужина», Пицунда, Абхазия.  
 Фронтенд написан на React + TypeScript, взаимодействует с Laravel API.
 
