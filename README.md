@@ -86,20 +86,20 @@ src/
 
 ### Требования
 
-- Node.js 18+
-- npm или pnpm
+- Node.js 22+ (минимум 20.19 — требование Vite 8)
+- pnpm (версия зафиксирована в поле `packageManager` в `package.json`)
 
 ### Локальный запуск
 
 ```bash
 # Установить зависимости
-npm install
+pnpm install
 
 # Создать файл переменных окружения
 cp .env.example .env.local
 
 # Запустить dev-сервер
-npm run dev
+pnpm dev
 ```
 
 Сайт будет доступен по адресу: http://localhost:5173
@@ -121,10 +121,15 @@ VITE_API_URL=https://your-domain.ru/api
 ## Сборка для продакшна
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Собранные файлы появятся в папке `dist/` — их нужно разместить на сервере.
+
+## CI
+
+GitHub Actions (`.github/workflows/ci.yml`) на каждый push и pull request
+в `main` прогоняет строгую проверку типов и сборку (`pnpm build`).
 
 ## Связанные репозитории
 
