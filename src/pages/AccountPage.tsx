@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { apiClient, authApi, bookingsApi } from '../api';
+import { authApi, bookingsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
-import { getErrorMessage, parseValidationErrors } from '../utils/errors';
+import { parseValidationErrors } from '../utils/errors';
 import { formatDate } from '../utils/format';
 import Field from '../components/Field';
+import ReviewModal from '../components/ReviewModal';
 import Spinner from '../components/Spinner';
 import type { Booking } from '../types';
 
@@ -38,10 +39,14 @@ function BookingsTab() {
   const [cancelling, setCancelling] = useState<number | null>(null);
   const [reviewModal, setReviewModal] = useState<Booking | null>(null);
 
-  useEffect(() => {
+  const loadBookings = () =>
     bookingsApi.myBookings()
       .then(({ data }) => setBookings(data))
       .finally(() => setLoading(false));
+
+  useEffect(() => {
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCancel = async (id: number) => {
@@ -104,13 +109,18 @@ function BookingsTab() {
                   {cancelling === booking.id ? 'Отменяем...' : 'Отменить'}
                 </button>
               )}
-              {booking.status === 'confirmed' && (
+              {booking.status === 'confirmed' && !booking.review && (
                 <button
                   onClick={() => setReviewModal(booking)}
                   className="text-sm border border-blue-300 text-blue-700 hover:bg-blue-50 px-4 py-1.5 rounded-lg transition"
                 >
                   Оставить отзыв
                 </button>
+              )}
+              {booking.review?.status === 'pending' && (
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                  Отзыв ожидает подтверждения
+                </span>
               )}
             </div>
           </div>
@@ -119,106 +129,12 @@ function BookingsTab() {
 
       {reviewModal && (
         <ReviewModal
-          booking={reviewModal}
+          bookings={[reviewModal]}
           onClose={() => setReviewModal(null)}
+          onSubmitted={loadBookings}
         />
       )}
     </>
-  );
-}
-
-// ─── Модал отзыва ─────────────────────────────────────────────────────────────
-
-function ReviewModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
-  const [rating, setRating] = useState(0);
-  const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
-  const [error, setError] = useState('');
-
-  const handleSubmit = async () => {
-    if (rating === 0) { setError('Выберите оценку'); return; }
-    if (text.trim().length < 10) { setError('Напишите хотя бы пару слов'); return; }
-    setError('');
-    setLoading(true);
-    try {
-      await apiClient.post('/reviews', { booking_id: booking.id, rating, text });
-      setDone(true);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Ошибка при отправке отзыва'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        {done ? (
-          <div className="text-center py-4">
-            <div className="text-5xl mb-3">🙏</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Спасибо за отзыв!</h3>
-            <p className="text-gray-500 text-sm mb-5">
-              Отзыв отправлен на проверку и появится на сайте после одобрения.
-            </p>
-            <button onClick={onClose} className="bg-blue-800 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-              Закрыть
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-gray-800">Отзыв о проживании</h3>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
-            </div>
-
-            <p className="text-sm text-gray-500 mb-4">
-              Номер №{booking.room.number} · {booking.room.type}
-            </p>
-
-            <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Оценка</p>
-              <div className="flex gap-1.5">
-                {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-                  <button
-                    key={n}
-                    onClick={() => setRating(n)}
-                    className={`w-8 h-8 rounded-full text-sm font-semibold transition ${
-                      n <= rating
-                        ? 'bg-yellow-400 text-white'
-                        : 'bg-gray-100 text-gray-500 hover:bg-yellow-100'
-                    }`}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Ваш отзыв</p>
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
-                rows={4}
-                placeholder="Расскажите о своём отдыхе..."
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
-              />
-            </div>
-
-            {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full bg-blue-800 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
-            >
-              {loading ? 'Отправляем...' : 'Отправить отзыв'}
-            </button>
-          </>
-        )}
-      </div>
-    </div>
   );
 }
 

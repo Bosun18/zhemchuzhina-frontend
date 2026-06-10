@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { roomsApi } from '../api';
+import { useEffect, useState } from 'react';
+import { bookingsApi, roomsApi } from '../api';
 import { useFetch } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/Spinner';
 import BookingForm from '../components/BookingForm';
 import { dateStr, addDays, todayStr } from '../utils/dates';
-import type { CalendarRoom, CalendarBooking } from '../types';
+import { formatDate } from '../utils/format';
+import type { Booking, CalendarRoom, CalendarBooking } from '../types';
 
 const MONTHS = [
   'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
@@ -104,6 +105,25 @@ export default function BookingPage() {
     [year, month, reloadKey],
   );
   const rooms = data ?? [];
+
+  // Свои pending-брони — баннеры «ожидает подтверждения» под формой.
+  // reloadKey в зависимостях: после успешной брони список обновляется
+  // вместе с календарём.
+  const [myBookings, setMyBookings] = useState<Booking[]>([]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMyBookings([]);
+      return;
+    }
+    let cancelled = false;
+    bookingsApi.myBookings()
+      .then(({ data }) => { if (!cancelled) setMyBookings(data); })
+      .catch(() => {}); // не критично — календарь и форма работают и без баннеров
+    return () => { cancelled = true; };
+  }, [isAuthenticated, reloadKey]);
+
+  const pendingBookings = myBookings.filter((b) => b.status === 'pending');
 
   // Выбранный в форме диапазон — подсветка в сетке (ночи [заезд, выезд)).
   const selectedRange = rangeSpan(checkInDate, checkOutDate, dayDates);
@@ -339,6 +359,16 @@ export default function BookingPage() {
             submitDisabled={rangeConflict}
             onSuccess={handleBookingSuccess}
           />
+
+          {pendingBookings.map((b) => (
+            <div
+              key={b.id}
+              className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 mt-4 text-sm"
+            >
+              Бронирование №{b.id} на даты {formatDate(b.check_in)} → {formatDate(b.check_out)} ожидает
+              подтверждения администратором.
+            </div>
+          ))}
         </div>
 
       </div>

@@ -46,8 +46,16 @@ export interface BookingRoom {
   type: string;
 }
 
+// Отзыв на бронь внутри бронирования — formatBooking() кладёт null,
+// пока отзыв не оставлен. Оставить отзыв можно только на confirmed-бронь
+// без отзыва.
+export interface BookingReview {
+  id: number;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 // Бронирование — BookingController.formatBooking()
-// возвращает: id, check_in, check_out, guests_count, status, comment, room
+// возвращает: id, check_in, check_out, guests_count, status, comment, review, room
 export interface Booking {
   id: number;
   check_in: string;
@@ -56,6 +64,7 @@ export interface Booking {
   status: 'pending' | 'confirmed' | 'cancelled';
   comment?: string;
   admin_comment?: string;
+  review: BookingReview | null;
   room: BookingRoom;
 }
 
