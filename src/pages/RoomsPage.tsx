@@ -150,7 +150,6 @@ export default function RoomsPage() {
       <PageHeader
         title="Номера"
         subtitle="10 номеров на двух этажах · Первая линия · 50м от моря"
-        maxWidth="max-w-6xl"
       />
       <div className="max-w-6xl mx-auto px-4 py-12">
 

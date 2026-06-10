@@ -176,7 +176,7 @@ export default function BookingPage() {
 
   return (
     <>
-      <PageHeader title="Бронирование" maxWidth="max-w-7xl" align="left">
+      <PageHeader title="Бронирование">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -199,7 +199,7 @@ export default function BookingPage() {
           </button>
         </div>
       </PageHeader>
-      <div className="max-w-7xl mx-auto px-4 py-12">
+      <div className="max-w-6xl mx-auto px-4 py-12">
 
         {success && (
           <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6 text-center">

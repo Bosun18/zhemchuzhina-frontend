@@ -13,8 +13,8 @@ export default function ServicesPage() {
 
   return (
     <>
-      <PageHeader title="Услуги и акции" subtitle="Всё для комфортного отдыха" maxWidth="max-w-5xl" />
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <PageHeader title="Услуги и акции" subtitle="Всё для комфортного отдыха" />
+      <div className="max-w-6xl mx-auto px-4 py-12">
         {loading && <Spinner />}
 
         {error && (

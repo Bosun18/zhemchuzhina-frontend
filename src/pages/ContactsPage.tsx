@@ -15,8 +15,8 @@ export default function ContactsPage() {
 
   return (
     <>
-      <PageHeader title="Контакты" subtitle="Будем рады ответить на ваши вопросы" maxWidth="max-w-5xl" />
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <PageHeader title="Контакты" subtitle="Будем рады ответить на ваши вопросы" />
+      <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
 
           <div className="space-y-6">
