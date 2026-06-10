@@ -31,6 +31,15 @@ function cellStatus(room: CalendarRoom, day: string): CellStatus {
   return 'free';
 }
 
+// Все ночи полуинтервала [from, to) свободны. Сама ночь to не проверяется:
+// в день выезда номер уже может заселяться заново (выезд до 12:00, заезд после 14:00).
+function isRangeFree(room: CalendarRoom, from: string, to: string): boolean {
+  for (let d = from; d < to; d = addDays(d, 1)) {
+    if (cellStatus(room, d) !== 'free') return false;
+  }
+  return true;
+}
+
 interface DayRange {
   start: number; // индекс первой занятой ночи в days
   span: number;  // число занятых ночей в видимом диапазоне
@@ -99,6 +108,12 @@ export default function BookingPage() {
   // Выбранный в форме диапазон — подсветка в сетке (ночи [заезд, выезд)).
   const selectedRange = rangeSpan(checkInDate, checkOutDate, dayDates);
 
+  // Через date-инпуты можно выбрать диапазон поверх чужой брони —
+  // в этом состоянии показываем предупреждение и блокируем сабмит.
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) ?? null;
+  const rangeConflict =
+    selectedRoom !== null && !isRangeFree(selectedRoom, checkInDate, checkOutDate);
+
   const changeMonth = (delta: number) => {
     const d = new Date(year, month + delta, 1);
     setYear(d.getFullYear());
@@ -111,18 +126,24 @@ export default function BookingPage() {
     setReloadKey((k) => k + 1); // перезагрузить календарь
   };
 
-  // Клик по свободной ячейке: первый — номер и дата заезда, второй клик
-  // правее по той же строке — дата выезда. Клик по другой строке или
-  // левее заезда начинает выбор заново.
+  // Клик правее заезда по той же строке — дата выезда, если все ночи
+  // [checkInDate, ds) свободны. Статус самой ночи ds не важен: она в
+  // проживание не входит, так что выезд в день чужого заезда допустим.
+  const isCheckOutPick = (room: CalendarRoom, ds: string) =>
+    room.id === selectedRoomId && ds > checkInDate && isRangeFree(room, checkInDate, ds);
+
+  // Клик по свободной ячейке: первый — номер и дата заезда, второй —
+  // дата выезда (см. isCheckOutPick). Любой другой клик по свободной
+  // ячейке начинает выбор заново.
   const handleCellClick = (room: CalendarRoom, ds: string) => {
-    if (cellStatus(room, ds) !== 'free') return;
-    if (room.id !== selectedRoomId || ds <= checkInDate) {
-      setSelectedRoomId(room.id);
-      setCheckInDate(ds);
-      setCheckOutDate(addDays(ds, 1));
-    } else {
+    if (isCheckOutPick(room, ds)) {
       setCheckOutDate(ds);
+      return;
     }
+    if (cellStatus(room, ds) !== 'free') return;
+    setSelectedRoomId(room.id);
+    setCheckInDate(ds);
+    setCheckOutDate(addDays(ds, 1));
   };
 
   const gridTemplate = `170px repeat(${days.length}, ${DAY_W}px)`;
@@ -237,7 +258,7 @@ export default function BookingPage() {
                               const status = cellStatus(room, ds);
                               const isToday = ds === todayStr;
                               const isWeekend = dows[i] === 0 || dows[i] === 6;
-                              const clickable = status === 'free';
+                              const clickable = status === 'free' || isCheckOutPick(room, ds);
                               const bg =
                                 status === 'past' ? 'bg-gray-100'
                                 : isToday ? 'bg-blue-50'
@@ -268,7 +289,11 @@ export default function BookingPage() {
                           {/* Подсветка выбранного в форме диапазона */}
                           {isSelected && selectedRange && (
                             <div
-                              className="pointer-events-none absolute top-1 bottom-1 rounded-lg border-2 border-blue-500 bg-blue-400/20"
+                              className={`pointer-events-none absolute top-1 bottom-1 rounded-lg border-2 ${
+                                rangeConflict
+                                  ? 'border-amber-500 bg-amber-400/30'
+                                  : 'border-blue-500 bg-blue-400/20'
+                              }`}
                               style={{
                                 left: selectedRange.start * DAY_W + 1,
                                 width: selectedRange.span * DAY_W - 2,
@@ -297,6 +322,11 @@ export default function BookingPage() {
 
         {/* Форма — на мобильных идёт первой, на десктопе sticky справа */}
         <div className="order-1 lg:order-2 lg:sticky lg:top-6">
+          {rangeConflict && (
+            <div className="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 mb-4 text-sm font-medium">
+              В выбранном диапазоне есть занятые даты. Выберите другие даты.
+            </div>
+          )}
           <BookingForm
             rooms={rooms}
             selectedRoomId={selectedRoomId}
@@ -306,6 +336,7 @@ export default function BookingPage() {
             onCheckInChange={setCheckInDate}
             onCheckOutChange={setCheckOutDate}
             isAuthenticated={isAuthenticated}
+            submitDisabled={rangeConflict}
             onSuccess={handleBookingSuccess}
           />
         </div>

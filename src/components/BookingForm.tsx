@@ -15,6 +15,9 @@ interface BookingFormProps {
   onCheckInChange: (date: string) => void;
   onCheckOutChange: (date: string) => void;
   isAuthenticated: boolean;
+  // Блокировка сабмита извне (например, диапазон пересекает чужую бронь) —
+  // сама проверка живёт в BookingPage.
+  submitDisabled: boolean;
   onSuccess: () => void;
 }
 
@@ -27,6 +30,7 @@ export default function BookingForm({
   onCheckInChange,
   onCheckOutChange,
   isAuthenticated,
+  submitDisabled,
   onSuccess,
 }: BookingFormProps) {
   const [guestsCount, setGuestsCount] = useState(1);
@@ -177,7 +181,7 @@ export default function BookingForm({
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || submitDisabled}
         className="w-full bg-blue-800 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
       >
         {submitting ? 'Отправка…' : 'Забронировать'}
