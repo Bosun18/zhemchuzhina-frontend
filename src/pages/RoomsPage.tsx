@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { roomsApi } from '../api';
 import { useFetch } from '../hooks/useFetch';
+import PageHeader from '../components/PageHeader';
 import Spinner from '../components/Spinner';
 import type { Room, RoomType } from '../types';
 
@@ -145,45 +146,45 @@ export default function RoomsPage() {
   const groups = groupByType(data ?? []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12">
+    <>
+      <PageHeader
+        title="Номера"
+        subtitle="10 номеров на двух этажах · Первая линия · 50м от моря"
+        maxWidth="max-w-6xl"
+      />
+      <div className="max-w-6xl mx-auto px-4 py-12">
 
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-blue-900 mb-3">Номера</h1>
-        <p className="text-gray-500 text-lg">
-          10 номеров на двух этажах · Первая линия · 50м от моря
-        </p>
-      </div>
+        {loading && <Spinner />}
 
-      {loading && <Spinner />}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">
+            {error}
+          </div>
+        )}
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">
-          {error}
+        {!loading && !error && groups.length === 0 && (
+          <p className="text-center text-gray-500 py-16">Номера временно недоступны.</p>
+        )}
+
+        {!loading && !error && groups.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {groups.map((group) => (
+              <RoomTypeCard key={group.type.id} group={group} />
+            ))}
+          </div>
+        )}
+
+        {/* Блок про двор */}
+        <div className="mt-16 bg-blue-50 rounded-2xl p-8 text-center">
+          <div className="text-4xl mb-3">🌿</div>
+          <h2 className="text-xl font-bold text-blue-900 mb-2">Общий двор</h2>
+          <p className="text-gray-600 max-w-xl mx-auto">
+            К вашим услугам — крытая терраса, кухня с посудой и газовой плитой, столики.
+            Идеально для вечерних посиделок после пляжа.
+          </p>
         </div>
-      )}
 
-      {!loading && !error && groups.length === 0 && (
-        <p className="text-center text-gray-400 py-16">Номера временно недоступны.</p>
-      )}
-
-      {!loading && !error && groups.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {groups.map((group) => (
-            <RoomTypeCard key={group.type.id} group={group} />
-          ))}
-        </div>
-      )}
-
-      {/* Блок про двор */}
-      <div className="mt-16 bg-blue-50 rounded-2xl p-8 text-center">
-        <div className="text-4xl mb-3">🌿</div>
-        <h2 className="text-xl font-bold text-blue-900 mb-2">Общий двор</h2>
-        <p className="text-gray-600 max-w-xl mx-auto">
-          К вашим услугам — крытая терраса, кухня с посудой и газовой плитой, столики.
-          Идеально для вечерних посиделок после пляжа.
-        </p>
       </div>
-
-    </div>
+    </>
   );
 }

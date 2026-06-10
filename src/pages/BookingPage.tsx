@@ -4,6 +4,7 @@ import { useFetch } from '../hooks/useFetch';
 import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/Spinner';
 import BookingForm from '../components/BookingForm';
+import PageHeader from '../components/PageHeader';
 import { dateStr, addDays, todayStr } from '../utils/dates';
 import { formatDate } from '../utils/format';
 import type { Booking, CalendarRoom, CalendarBooking } from '../types';
@@ -174,10 +175,8 @@ export default function BookingPage() {
   const gridTemplate = `170px repeat(${days.length}, ${DAY_W}px)`;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-12">
-
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-4xl font-bold text-blue-900">Бронирование</h1>
+    <>
+      <PageHeader title="Бронирование" maxWidth="max-w-7xl" align="left">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -187,7 +186,7 @@ export default function BookingPage() {
           >
             ←
           </button>
-          <span className="text-lg font-semibold text-gray-700 min-w-[150px] text-center">
+          <span className="text-lg font-semibold text-blue-100 min-w-[150px] text-center">
             {MONTHS[month]} {year}
           </span>
           <button
@@ -199,184 +198,186 @@ export default function BookingPage() {
             →
           </button>
         </div>
-      </div>
+      </PageHeader>
+      <div className="max-w-7xl mx-auto px-4 py-12">
 
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6 text-center">
-          Ваша заявка принята! Ожидайте подтверждения на почте.
-        </div>
-      )}
+        {success && (
+          <div className="bg-green-50 border border-green-200 text-green-800 rounded-xl p-4 mb-6 text-center">
+            Ваша заявка принята! Ожидайте подтверждения на почте.
+          </div>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
 
-        {/* Календарь — на мобильных идёт вторым (под формой) */}
-        <div className="order-2 lg:order-1 min-w-0">
+          {/* Календарь — на мобильных идёт вторым (под формой) */}
+          <div className="order-2 lg:order-1 min-w-0">
 
-          <p className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
-            Кликните по свободным датам в календаре или заполните форму.
-          </p>
+            <p className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 mb-4">
+              Кликните по свободным датам в календаре или заполните форму.
+            </p>
 
-          {loading && <Spinner />}
+            {loading && <Spinner />}
 
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">
+                {error}
+              </div>
+            )}
 
-          {!loading && !error && rooms.length === 0 && (
-            <p className="text-center text-gray-400 py-16">Номера временно недоступны.</p>
-          )}
+            {!loading && !error && rooms.length === 0 && (
+              <p className="text-center text-gray-400 py-16">Номера временно недоступны.</p>
+            )}
 
-          {!loading && !error && rooms.length > 0 && (
-            <>
-              <div className="bg-white rounded-2xl shadow overflow-x-auto">
-                <div className="inline-grid" style={{ gridTemplateColumns: gridTemplate }}>
+            {!loading && !error && rooms.length > 0 && (
+              <>
+                <div className="bg-white rounded-2xl shadow overflow-x-auto">
+                  <div className="inline-grid" style={{ gridTemplateColumns: gridTemplate }}>
 
-                  {/* Шапка: пустой угол + дни месяца */}
-                  <div className="sticky left-0 z-10 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 flex items-end">
-                    Номер
-                  </div>
-                  {days.map((day, i) => {
-                    const isToday = dayDates[i] === todayStr;
-                    const isWeekend = dows[i] === 0 || dows[i] === 6;
-                    return (
-                      <div
-                        key={day}
-                        className={`border-b border-r border-gray-200 py-2 text-center ${
-                          isToday ? 'bg-blue-100' : isWeekend ? 'bg-gray-100' : ''
-                        }`}
-                      >
-                        <div className={`text-sm font-semibold ${isToday ? 'text-blue-800' : 'text-gray-700'}`}>
-                          {day}
-                        </div>
-                        <div className={`text-[10px] ${isToday ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
-                          {WEEKDAYS[dows[i]]}
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  {/* Строки по номерам */}
-                  {rooms.map((room) => {
-                    const isSelected = room.id === selectedRoomId;
-                    const bars = bookingBars(room.bookings, dayDates);
-                    return (
-                      <div key={room.id} className="contents">
+                    {/* Шапка: пустой угол + дни месяца */}
+                    <div className="sticky left-0 z-10 bg-gray-50 border-b border-r border-gray-200 px-3 py-2 text-xs font-semibold text-gray-500 flex items-end">
+                      Номер
+                    </div>
+                    {days.map((day, i) => {
+                      const isToday = dayDates[i] === todayStr;
+                      const isWeekend = dows[i] === 0 || dows[i] === 6;
+                      return (
                         <div
-                          className={`sticky left-0 z-10 border-b border-r border-gray-200 px-3 py-2 flex flex-col justify-center transition ${
-                            isSelected ? 'bg-blue-100' : 'bg-white'
+                          key={day}
+                          className={`border-b border-r border-gray-200 py-2 text-center ${
+                            isToday ? 'bg-blue-100' : isWeekend ? 'bg-gray-100' : ''
                           }`}
                         >
-                          <span className="text-sm font-semibold text-gray-800">№{room.number}</span>
-                          <span className="text-xs text-gray-400">{room.type.name} · {room.floor} эт.</span>
+                          <div className={`text-sm font-semibold ${isToday ? 'text-blue-800' : 'text-gray-700'}`}>
+                            {day}
+                          </div>
+                          <div className={`text-[10px] ${isToday ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>
+                            {WEEKDAYS[dows[i]]}
+                          </div>
                         </div>
+                      );
+                    })}
 
-                        {/* Дни строки + полосы броней поверх ячеек */}
-                        <div className="relative" style={{ gridColumn: '2 / -1' }}>
+                    {/* Строки по номерам */}
+                    {rooms.map((room) => {
+                      const isSelected = room.id === selectedRoomId;
+                      const bars = bookingBars(room.bookings, dayDates);
+                      return (
+                        <div key={room.id} className="contents">
                           <div
-                            className="grid"
-                            style={{ gridTemplateColumns: `repeat(${days.length}, ${DAY_W}px)` }}
+                            className={`sticky left-0 z-10 border-b border-r border-gray-200 px-3 py-2 flex flex-col justify-center transition ${
+                              isSelected ? 'bg-blue-100' : 'bg-white'
+                            }`}
                           >
-                            {days.map((day, i) => {
-                              const ds = dayDates[i];
-                              const status = cellStatus(room, ds);
-                              const isToday = ds === todayStr;
-                              const isWeekend = dows[i] === 0 || dows[i] === 6;
-                              const clickable = status === 'free' || isCheckOutPick(room, ds);
-                              const bg =
-                                status === 'past' ? 'bg-gray-100'
-                                : isToday ? 'bg-blue-50'
-                                : isWeekend ? 'bg-gray-50'
-                                : 'bg-white';
-                              return (
-                                <div
-                                  key={day}
-                                  title={ds}
-                                  onClick={clickable ? () => handleCellClick(room, ds) : undefined}
-                                  className={`h-12 border-b border-r border-gray-100 ${bg} ${
-                                    clickable ? 'cursor-pointer hover:bg-blue-50' : ''
-                                  }`}
-                                />
-                              );
-                            })}
+                            <span className="text-sm font-semibold text-gray-800">№{room.number}</span>
+                            <span className="text-xs text-gray-400">{room.type.name} · {room.floor} эт.</span>
                           </div>
 
-                          {/* Полосы броней: одна на диапазон, с зазором по краям */}
-                          {bars.map((bar, i) => (
+                          {/* Дни строки + полосы броней поверх ячеек */}
+                          <div className="relative" style={{ gridColumn: '2 / -1' }}>
                             <div
-                              key={i}
-                              className={`pointer-events-none absolute top-2 h-8 rounded-lg ${barClasses[bar.status]}`}
-                              style={{ left: bar.start * DAY_W + 2, width: bar.span * DAY_W - 4 }}
-                            />
-                          ))}
+                              className="grid"
+                              style={{ gridTemplateColumns: `repeat(${days.length}, ${DAY_W}px)` }}
+                            >
+                              {days.map((day, i) => {
+                                const ds = dayDates[i];
+                                const status = cellStatus(room, ds);
+                                const isToday = ds === todayStr;
+                                const isWeekend = dows[i] === 0 || dows[i] === 6;
+                                const clickable = status === 'free' || isCheckOutPick(room, ds);
+                                const bg =
+                                  status === 'past' ? 'bg-gray-100'
+                                  : isToday ? 'bg-blue-50'
+                                  : isWeekend ? 'bg-gray-50'
+                                  : 'bg-white';
+                                return (
+                                  <div
+                                    key={day}
+                                    title={ds}
+                                    onClick={clickable ? () => handleCellClick(room, ds) : undefined}
+                                    className={`h-12 border-b border-r border-gray-100 ${bg} ${
+                                      clickable ? 'cursor-pointer hover:bg-blue-50' : ''
+                                    }`}
+                                  />
+                                );
+                              })}
+                            </div>
 
-                          {/* Подсветка выбранного в форме диапазона */}
-                          {isSelected && selectedRange && (
-                            <div
-                              className={`pointer-events-none absolute top-1 bottom-1 rounded-lg border-2 ${
-                                rangeConflict
-                                  ? 'border-amber-500 bg-amber-400/30'
-                                  : 'border-blue-500 bg-blue-400/20'
-                              }`}
-                              style={{
-                                left: selectedRange.start * DAY_W + 1,
-                                width: selectedRange.span * DAY_W - 2,
-                              }}
-                            />
-                          )}
+                            {/* Полосы броней: одна на диапазон, с зазором по краям */}
+                            {bars.map((bar, i) => (
+                              <div
+                                key={i}
+                                className={`pointer-events-none absolute top-2 h-8 rounded-lg ${barClasses[bar.status]}`}
+                                style={{ left: bar.start * DAY_W + 2, width: bar.span * DAY_W - 4 }}
+                              />
+                            ))}
+
+                            {/* Подсветка выбранного в форме диапазона */}
+                            {isSelected && selectedRange && (
+                              <div
+                                className={`pointer-events-none absolute top-1 bottom-1 rounded-lg border-2 ${
+                                  rangeConflict
+                                    ? 'border-amber-500 bg-amber-400/30'
+                                    : 'border-blue-500 bg-blue-400/20'
+                                }`}
+                                style={{
+                                  left: selectedRange.start * DAY_W + 1,
+                                  width: selectedRange.span * DAY_W - 2,
+                                }}
+                              />
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
+                  </div>
                 </div>
+
+                {/* Легенда */}
+                <div className="flex flex-wrap gap-4 mt-5 text-sm text-gray-600">
+                  <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-white border border-gray-300" /> Свободно</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-3 rounded-md bg-amber-300" /> Ожидает подтверждения</span>
+                  <span className="flex items-center gap-2"><span className="w-5 h-3 rounded-md bg-rose-400" /> Занято</span>
+                  <span className="flex items-center gap-2"><span className="w-4 h-4 rounded border-2 border-blue-500 bg-blue-400/20" /> Ваш выбор</span>
+                  <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-gray-100 border border-gray-200" /> Прошедшие даты</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Форма — на мобильных идёт первой, на десктопе sticky справа */}
+          <div className="order-1 lg:order-2 lg:sticky lg:top-6">
+            {rangeConflict && (
+              <div className="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 mb-4 text-sm font-medium">
+                В выбранном диапазоне есть занятые даты. Выберите другие даты.
               </div>
+            )}
+            <BookingForm
+              rooms={rooms}
+              selectedRoomId={selectedRoomId}
+              onRoomChange={setSelectedRoomId}
+              checkInDate={checkInDate}
+              checkOutDate={checkOutDate}
+              onCheckInChange={setCheckInDate}
+              onCheckOutChange={setCheckOutDate}
+              isAuthenticated={isAuthenticated}
+              submitDisabled={rangeConflict}
+              onSuccess={handleBookingSuccess}
+            />
 
-              {/* Легенда */}
-              <div className="flex flex-wrap gap-4 mt-5 text-sm text-gray-600">
-                <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-white border border-gray-300" /> Свободно</span>
-                <span className="flex items-center gap-2"><span className="w-5 h-3 rounded-md bg-amber-300" /> Ожидает подтверждения</span>
-                <span className="flex items-center gap-2"><span className="w-5 h-3 rounded-md bg-rose-400" /> Занято</span>
-                <span className="flex items-center gap-2"><span className="w-4 h-4 rounded border-2 border-blue-500 bg-blue-400/20" /> Ваш выбор</span>
-                <span className="flex items-center gap-2"><span className="w-4 h-4 rounded bg-gray-100 border border-gray-200" /> Прошедшие даты</span>
+            {pendingBookings.map((b) => (
+              <div
+                key={b.id}
+                className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 mt-4 text-sm"
+              >
+                Бронирование №{b.id} на даты {formatDate(b.check_in)} → {formatDate(b.check_out)} ожидает
+                подтверждения администратором.
               </div>
-            </>
-          )}
+            ))}
+          </div>
+
         </div>
-
-        {/* Форма — на мобильных идёт первой, на десктопе sticky справа */}
-        <div className="order-1 lg:order-2 lg:sticky lg:top-6">
-          {rangeConflict && (
-            <div className="bg-amber-50 border border-amber-300 text-amber-800 rounded-xl px-4 py-3 mb-4 text-sm font-medium">
-              В выбранном диапазоне есть занятые даты. Выберите другие даты.
-            </div>
-          )}
-          <BookingForm
-            rooms={rooms}
-            selectedRoomId={selectedRoomId}
-            onRoomChange={setSelectedRoomId}
-            checkInDate={checkInDate}
-            checkOutDate={checkOutDate}
-            onCheckInChange={setCheckInDate}
-            onCheckOutChange={setCheckOutDate}
-            isAuthenticated={isAuthenticated}
-            submitDisabled={rangeConflict}
-            onSuccess={handleBookingSuccess}
-          />
-
-          {pendingBookings.map((b) => (
-            <div
-              key={b.id}
-              className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 mt-4 text-sm"
-            >
-              Бронирование №{b.id} на даты {formatDate(b.check_in)} → {formatDate(b.check_out)} ожидает
-              подтверждения администратором.
-            </div>
-          ))}
-        </div>
-
       </div>
-    </div>
+    </>
   );
 }

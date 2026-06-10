@@ -50,7 +50,7 @@
 src/
 ├── api/           # Axios-клиент и функции запросов к API
 ├── components/    # Переиспользуемые компоненты (BookingForm, ReviewModal,
-│                  # Field, Spinner, CookieBanner, ErrorBoundary,
+│                  # PageHeader, Field, Spinner, CookieBanner, ErrorBoundary,
 │                  # WhatsAppButton, NotificationBell)
 ├── context/       # React Context (AuthContext — авторизация)
 ├── hooks/         # Кастомные хуки (useFetch — загрузка данных, useIdleLogout)
