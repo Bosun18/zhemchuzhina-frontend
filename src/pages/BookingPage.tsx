@@ -144,6 +144,11 @@ export default function BookingPage() {
   const handleBookingSuccess = () => {
     setSuccess(true);
     setReloadKey((k) => k + 1); // перезагрузить календарь
+    // Сбрасываем выбор: иначе только что созданная бронь конфликтует
+    // с оставшимся в форме диапазоном и сразу загорается предупреждение.
+    setSelectedRoomId(null);
+    setCheckInDate(todayStr);
+    setCheckOutDate(addDays(todayStr, 1));
   };
 
   // Клик правее заезда по той же строке — дата выезда, если все ночи
