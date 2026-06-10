@@ -8,7 +8,7 @@ import { formatDate } from '../utils/format';
 import Field from '../components/Field';
 import ReviewModal from '../components/ReviewModal';
 import Spinner from '../components/Spinner';
-import type { Booking } from '../types';
+import type { Booking, BookingReview } from '../types';
 
 // ─── Вспомогательные компоненты ──────────────────────────────────────────────
 
@@ -17,6 +17,20 @@ function StatusBadge({ status }: { status: Booking['status'] }) {
     pending:   { label: 'Ожидает подтверждения', cls: 'bg-yellow-100 text-yellow-800' },
     confirmed: { label: 'Подтверждено',           cls: 'bg-green-100 text-green-800'  },
     cancelled: { label: 'Отменено',               cls: 'bg-red-100 text-red-800'      },
+  };
+  const { label, cls } = map[status];
+  return (
+    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
+function ReviewStatusBadge({ status }: { status: BookingReview['status'] }) {
+  const map = {
+    pending:  { label: 'Отзыв на модерации', cls: 'bg-yellow-100 text-yellow-800' },
+    approved: { label: 'Отзыв опубликован',  cls: 'bg-green-100 text-green-800'  },
+    rejected: { label: 'Отзыв отклонён',     cls: 'bg-red-100 text-red-800'      },
   };
   const { label, cls } = map[status];
   return (
@@ -109,19 +123,15 @@ function BookingsTab() {
                   {cancelling === booking.id ? 'Отменяем...' : 'Отменить'}
                 </button>
               )}
-              {booking.status === 'confirmed' && !booking.review && (
+              {booking.status === 'confirmed' && (
                 <button
                   onClick={() => setReviewModal(booking)}
                   className="text-sm border border-blue-300 text-blue-700 hover:bg-blue-50 px-4 py-1.5 rounded-lg transition"
                 >
-                  Оставить отзыв
+                  {booking.review ? 'Редактировать отзыв' : 'Оставить отзыв'}
                 </button>
               )}
-              {booking.review?.status === 'pending' && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-800">
-                  Отзыв ожидает подтверждения
-                </span>
-              )}
+              {booking.review && <ReviewStatusBadge status={booking.review.status} />}
             </div>
           </div>
         ))}
@@ -130,6 +140,7 @@ function BookingsTab() {
       {reviewModal && (
         <ReviewModal
           bookings={[reviewModal]}
+          editReview={reviewModal.review ?? undefined}
           onClose={() => setReviewModal(null)}
           onSubmitted={loadBookings}
         />

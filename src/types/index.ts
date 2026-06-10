@@ -48,10 +48,13 @@ export interface BookingRoom {
 
 // Отзыв на бронь внутри бронирования — formatBooking() кладёт null,
 // пока отзыв не оставлен. Оставить отзыв можно только на confirmed-бронь
-// без отзыва.
+// без отзыва; свой отзыв можно отредактировать (статус снова pending).
+// Ту же форму возвращают POST/PATCH /reviews.
 export interface BookingReview {
   id: number;
   status: 'pending' | 'approved' | 'rejected';
+  rating: number;
+  text: string;
 }
 
 // Бронирование — BookingController.formatBooking()

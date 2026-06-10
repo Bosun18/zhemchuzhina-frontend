@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiClient, bookingsApi } from '../api';
+import { bookingsApi, reviewsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useFetch } from '../hooks/useFetch';
 import { formatDate } from '../utils/format';
 import ReviewModal from '../components/ReviewModal';
 import Spinner from '../components/Spinner';
-import type { Booking, Review } from '../types';
+import type { Booking, BookingReview, Review } from '../types';
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -24,18 +24,23 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function ReviewsPage() {
   const { isAuthenticated } = useAuth();
-  const { data, loading, error } = useFetch<Review[]>(
-    () => apiClient.get('/reviews'),
-    'Не удалось загрузить отзывы.',
-  );
-  const reviews = data ?? [];
 
   // Свои брони — чтобы предложить оставить отзыв и показать статус pending.
   const [myBookings, setMyBookings] = useState<Booking[]>([]);
   const [bookingsReloadKey, setBookingsReloadKey] = useState(0);
-  // Список фиксируется на момент открытия, чтобы модалка не размонтировалась
-  // на экране «Спасибо», когда после отправки reviewable опустеет.
-  const [modalBookings, setModalBookings] = useState<Booking[] | null>(null);
+  // Параметры фиксируются на момент открытия, чтобы модалка не
+  // размонтировалась на экране «Спасибо», когда после отправки
+  // reviewable опустеет.
+  const [modal, setModal] = useState<{ bookings: Booking[]; editReview?: BookingReview } | null>(null);
+
+  // Лента перезагружается вместе с бронями: после редактирования
+  // approved-отзыв уходит на повторную модерацию и пропадает из ленты.
+  const { data, loading, error } = useFetch<Review[]>(
+    () => reviewsApi.list(),
+    'Не удалось загрузить отзывы.',
+    [bookingsReloadKey],
+  );
+  const reviews = data ?? [];
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -50,7 +55,7 @@ export default function ReviewsPage() {
   }, [isAuthenticated, bookingsReloadKey]);
 
   const reviewable = myBookings.filter((b) => b.status === 'confirmed' && !b.review);
-  const hasPendingReview = myBookings.some((b) => b.review?.status === 'pending');
+  const pendingReviewBooking = myBookings.find((b) => b.review?.status === 'pending');
 
   const avgRating = reviews.length
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
@@ -90,7 +95,7 @@ export default function ReviewsPage() {
           </p>
           <button
             type="button"
-            onClick={() => setModalBookings(reviewable)}
+            onClick={() => setModal({ bookings: reviewable })}
             className="inline-block bg-blue-800 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition text-sm"
           >
             Оставить отзыв
@@ -98,16 +103,27 @@ export default function ReviewsPage() {
         </div>
       )}
 
-      {isAuthenticated && hasPendingReview && (
+      {isAuthenticated && pendingReviewBooking?.review && (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-4 py-3 mb-8 text-sm text-center">
-          Ваш отзыв ожидает подтверждения администратором.
+          Ваш отзыв ожидает подтверждения администратором.{' '}
+          <button
+            type="button"
+            onClick={() => setModal({
+              bookings: [pendingReviewBooking],
+              editReview: pendingReviewBooking.review ?? undefined,
+            })}
+            className="font-semibold underline hover:text-yellow-900 transition"
+          >
+            Редактировать
+          </button>
         </div>
       )}
 
-      {modalBookings && (
+      {modal && (
         <ReviewModal
-          bookings={modalBookings}
-          onClose={() => setModalBookings(null)}
+          bookings={modal.bookings}
+          editReview={modal.editReview}
+          onClose={() => setModal(null)}
           onSubmitted={() => setBookingsReloadKey((k) => k + 1)}
         />
       )}

@@ -1,22 +1,25 @@
 import { useState } from 'react';
-import { apiClient } from '../api';
+import { reviewsApi } from '../api';
 import { getErrorMessage } from '../utils/errors';
 import { formatDate } from '../utils/format';
-import type { Booking } from '../types';
+import type { Booking, BookingReview } from '../types';
 
 interface ReviewModalProps {
   // Брони, на которые можно оставить отзыв (confirmed без отзыва).
   // Если их несколько — показываем селект выбора брони.
   bookings: Booking[];
+  // Режим редактирования: форма предзаполняется, сабмит идёт в PATCH,
+  // после чего отзыв уходит на повторную модерацию.
+  editReview?: BookingReview;
   onClose: () => void;
   // Вызывается после успешной отправки — страница перезагружает my-bookings.
   onSubmitted?: () => void;
 }
 
-export default function ReviewModal({ bookings, onClose, onSubmitted }: ReviewModalProps) {
+export default function ReviewModal({ bookings, editReview, onClose, onSubmitted }: ReviewModalProps) {
   const [bookingId, setBookingId] = useState(bookings[0]?.id ?? 0);
-  const [rating, setRating] = useState(0);
-  const [text, setText] = useState('');
+  const [rating, setRating] = useState(editReview?.rating ?? 0);
+  const [text, setText] = useState(editReview?.text ?? '');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +35,11 @@ export default function ReviewModal({ bookings, onClose, onSubmitted }: ReviewMo
     setError('');
     setLoading(true);
     try {
-      await apiClient.post('/reviews', { booking_id: booking.id, rating, text });
+      if (editReview) {
+        await reviewsApi.update(editReview.id, { rating, text });
+      } else {
+        await reviewsApi.create({ booking_id: booking.id, rating, text });
+      }
       setDone(true);
       onSubmitted?.();
     } catch (err) {
@@ -48,9 +55,13 @@ export default function ReviewModal({ bookings, onClose, onSubmitted }: ReviewMo
         {done ? (
           <div className="text-center py-4">
             <div className="text-5xl mb-3">🙏</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Спасибо за отзыв!</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              {editReview ? 'Отзыв обновлён!' : 'Спасибо за отзыв!'}
+            </h3>
             <p className="text-gray-500 text-sm mb-5">
-              Отзыв отправлен на проверку и появится на сайте после одобрения.
+              {editReview
+                ? 'Отзыв отправлен на повторную модерацию и появится на сайте после одобрения.'
+                : 'Отзыв отправлен на проверку и появится на сайте после одобрения.'}
             </p>
             <button onClick={onClose} className="bg-blue-800 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
               Закрыть
@@ -59,7 +70,9 @@ export default function ReviewModal({ bookings, onClose, onSubmitted }: ReviewMo
         ) : (
           <>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-gray-800">Отзыв о проживании</h3>
+              <h3 className="text-lg font-bold text-gray-800">
+                {editReview ? 'Редактировать отзыв' : 'Отзыв о проживании'}
+              </h3>
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
 
@@ -123,7 +136,9 @@ export default function ReviewModal({ bookings, onClose, onSubmitted }: ReviewMo
               disabled={loading}
               className="w-full bg-blue-800 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
             >
-              {loading ? 'Отправляем...' : 'Отправить отзыв'}
+              {loading
+                ? (editReview ? 'Сохраняем...' : 'Отправляем...')
+                : (editReview ? 'Сохранить' : 'Отправить отзыв')}
             </button>
           </>
         )}
